@@ -1,0 +1,241 @@
+
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prashant Modified Car World</title>
+<style>
+*{box-sizing:border-box}
+body{
+ margin:0;background:#101820;color:white;
+ font-family:Arial;text-align:center;overflow:hidden
+}
+h2{margin:8px;color:#00eaff}
+#game{
+ width:100%;height:68vh;
+ background:#354b3c;display:block;
+ border-top:2px solid #00eaff;
+ border-bottom:2px solid #00eaff
+}
+.info{padding:5px;font-weight:bold}
+.controls{
+ display:flex;justify-content:center;gap:18px;
+ margin:12px;flex-wrap:wrap
+}
+button{
+ background:#00a9c7;color:white;border:2px solid white;
+ border-radius:12px;padding:15px 23px;
+ font-size:20px;font-weight:bold;
+ touch-action:none
+}
+</style>
+</head>
+<body>
+
+<h2>🏎 PRASHANT CAR WORLD</h2>
+<div class="info">
+Speed: <span id="speed">0</span> KM/H |
+Distance: <span id="distance">0</span> / 1000 M
+</div>
+
+<canvas id="game"></canvas>
+
+<div class="controls">
+<button id="left">⬅️</button>
+<button id="up">🚀</button>
+<button id="down">BRAKE</button>
+<button id="right">➡️</button>
+<button id="horn">📢 HORN</button>
+</div>
+
+<script>
+const canvas=document.getElementById("game");
+const ctx=canvas.getContext("2d");
+
+function resize(){
+ canvas.width=innerWidth;
+ canvas.height=innerHeight*0.68;
+}
+resize();
+addEventListener("resize",resize);
+
+const world=1000;
+let car={x:500,y:850,angle:0,speed:0};
+let distance=0;
+let keys={};
+
+function key(k,v){keys[k]=v}
+
+addEventListener("keydown",e=>{
+ key(e.key.toLowerCase(),true);
+});
+addEventListener("keyup",e=>{
+ key(e.key.toLowerCase(),false);
+});
+
+function control(id,k){
+ const b=document.getElementById(id);
+ b.addEventListener("pointerdown",e=>{
+ e.preventDefault();key(k,true);
+ });
+ b.addEventListener("pointerup",()=>key(k,false));
+ b.addEventListener("pointerleave",()=>key(k,false));
+ b.addEventListener("pointercancel",()=>key(k,false));
+}
+control("left","a");
+control("right","d");
+control("up","w");
+control("down","s");
+
+document.getElementById("horn").onclick=()=>{
+ alert("POOO POOO! 📢");
+};
+
+function rect(x,y,w,h,color){
+ ctx.fillStyle=color;
+ ctx.fillRect(x,y,w,h);
+}
+
+function worldDraw(){
+ // Green ground
+ rect(0,0,world,world,"#426448");
+
+ // Roads
+ for(let i=100;i<world;i+=200){
+   rect(i-35,0,70,world,"#33383b");
+   rect(0,i-35,world,70,"#33383b");
+ }
+ // Road markings
+ ctx.strokeStyle="#eeee99";
+ ctx.lineWidth=2;
+ ctx.setLineDash([15,15]);
+ for(let i=100;i<world;i+=200){
+  ctx.beginPath();ctx.moveTo(i,0);ctx.lineTo(i,world);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(0,i);ctx.lineTo(world,i);ctx.stroke();
+ }
+ ctx.setLineDash([]);
+
+ // Buildings
+ for(let x=15;x<world-70;x+=200){
+  for(let y=15;y<world-70;y+=200){
+   let bx=x+Math.sin(x*y)*10;
+   let by=y+Math.cos(x+y)*10;
+   if(Math.abs(bx-500)<65 && Math.abs(by-300)<65)continue;
+   if(Math.abs(bx-500)<65 && Math.abs(by-700)<65)continue;
+   rect(bx,by,65,65,"#777d83");
+   rect(bx+5,by+5,55,55,"#aab3bb");
+   rect(bx+12,by+12,12,12,"#38c9ef");
+   rect(bx+40,by+12,12,12,"#38c9ef");
+   rect(bx+12,by+38,12,12,"#38c9ef");
+   rect(bx+40,by+38,12,12,"#38c9ef");
+  }
+ }
+ // RED RAILWAY STATION
+ rect(410,255,180,90,"#9e1515");
+ rect(420,265,160,55,"#e32c2c");
+ ctx.fillStyle="white";
+ ctx.font="bold 17px Arial";
+ ctx.fillText("RAILWAY STATION",420,290);
+ rect(465,320,70,25,"#eeeeee");
+
+ // DJ STAGE
+ rect(420,650,160,100,"#171717");
+ rect(430,660,140,80,"#262626");
+ ctx.fillStyle="#00eeff";
+ ctx.font="bold 22px Arial";
+ ctx.fillText("DJ PARTY",450,650);
+
+ // 4 Bass speakers
+ for(let i=0;i<4;i++){
+  rect(435+i*34,680,27,50,"#090909");
+  ctx.beginPath();
+  ctx.arc(448+i*34,705,10,0,Math.PI*2);
+  ctx.fillStyle="#00bfff";ctx.fill();
+  ctx.strokeStyle="white";ctx.stroke();
+ }
+ // 4 Top speakers
+ for(let i=0;i<4;i++){
+  rect(435+i*34,655,27,20,"#111111");
+  ctx.beginPath();
+  ctx.arc(448+i*34,665,5,0,Math.PI*2);
+  ctx.fillStyle="#ffdd00";ctx.fill();
+ }
+
+ // Other cars
+ drawCar(300,300,"#ffcc00",0);
+ drawCar(700,500,"#ffffff",Math.PI/2);
+ drawCar(300,700,"#00d5ff",0);
+}
+
+function drawCar(x,y,color,angle){
+ ctx.save();
+ ctx.translate(x,y);
+ ctx.rotate(angle);
+ rect(-13,-23,26,46,color);
+ rect(-9,-17,18,13,"#172d46");
+ rect(-9,5,18,10,"#172d46");
+ rect(-16,-17,4,12,"#111");
+ rect(12,-17,4,12,"#111");
+ rect(-16,8,4,12,"#111");
+ rect(12,8,4,12,"#111");
+ ctx.restore();
+}
+
+function playerDraw(){
+ ctx.save();
+ ctx.translate(car.x,car.y);
+ ctx.rotate(car.angle);
+ // Modified car
+ rect(-17,-28,34,56,"#ed1010");
+ rect(-12,-21,24,15,"#101b35");
+ rect(-12,5,24,13,"#101b35");
+ rect(-20,-18,5,14,"#050505");
+ rect(15,-18,5,14,"#050505");
+ rect(-20,8,5,14,"#050505");
+ rect(15,8,5,14,"#050505");
+ rect(-12,-29,24,5,"#00eeff");
+ rect(-12,24,24,5,"#00eeff");
+ ctx.restore();
+}
+
+function loop(){
+ // Movement
+ if(keys["w"]||keys["arrowup"])car.speed=Math.min(car.speed+0.12,8);
+ else car.speed*=0.985;
+
+ if(keys["s"]||keys["arrowdown"])car.speed=Math.max(car.speed-0.25,-3);
+ if(keys["a"]||keys["arrowleft"])car.angle-=0.045;
+ if(keys["d"]||keys["arrowright"])car.angle+=0.045;
+
+ car.x+=Math.sin(car.angle)*car.speed;
+ car.y-=Math.cos(car.angle)*car.speed;
+
+ car.x=Math.max(15,Math.min(985,car.x));
+ car.y=Math.max(15,Math.min(985,car.y));
+
+ distance=Math.max(distance,Math.round(850-car.y));
+ distance=Math.min(1000,distance);
+
+ document.getElementById("speed").textContent=
+ Math.round(Math.abs(car.speed)*15);
+ document.getElementById("distance").textContent=distance;
+
+ // Camera
+ let camX=car.x-canvas.width/2;
+ let camY=car.y-canvas.height/2;
+
+ ctx.clearRect(0,0,canvas.width,canvas.height);
+ ctx.save();
+ ctx.translate(-camX,-camY);
+ worldDraw();
+ playerDraw();
+ ctx.restore();
+
+ requestAnimationFrame(loop);
+}
+loop();
+</script>
+</body>
+  </html>
+  
